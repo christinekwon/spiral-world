@@ -56,7 +56,7 @@ class MainScene extends Scene {
         this.create_new_spiral = this.create_new_spiral.bind(this);
 
         // set default low spiral count number that works on mobile
-        let count = 7;
+        let count = 4;
 
         // if site is opened on computer with higher GPU, display more spirals
         if (!isMobile) {
