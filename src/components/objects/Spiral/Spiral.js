@@ -3,7 +3,7 @@ import { TWEEN } from 'three/examples/jsm/libs/tween.module.min.js';
 import * as THREE from "three";
 
 class Spiral extends Group {
-    constructor(parent, envMap, x, z, max_iter, direction, y_squish, y_flip, warp) {
+    constructor(parent, listener, envMap, direction, y_flip) {
         // Call parent Group() constructor
         super();
 
@@ -16,33 +16,26 @@ class Spiral extends Group {
 
         };
 
-        this.x = x;
-        this.z = z;
+        this.x;
+        this.z;
 
         this.initTimestamp = 0;
         this.translationFactor = 2.0 / 300;
-        this.rotationSpeed = 0.1;
-        //     this.pivot = new THREE.Group();
-        //   pivot.position.set( x, 0, z );
-        //   this.add(this.pivot);
+        this.rotationSpeed;
 
         // 50 3
         this.shrink_factor = 1;
         // orig 2
         // 0.5
-        this.y_squish = y_squish * y_flip;
+        this.y_squish = y_flip;
         // this.y_offset = 30 * y_flip;
         // 31
         this.y_offset = -1;
 
-        // flower
-        // 0.3
-        this.warp = warp;
+        this.warp;
 
-        // triangle
-        // this.warp = 1.1;
+        this.num_spirals = 8;
 
-        let initY = 0;
         this.name = "SPIRAL";
 
 
@@ -61,13 +54,33 @@ class Spiral extends Group {
             envMapIntensity: 1.6
         });
 
+        // const RED = 0xff8e88;
+        // const ORANGE = 0xfeba4f;
+        // const YELLOW = 0xffe983;
+        // const GREEN = 0x77dd77;
+        // const BLUE = 0x0da2ff;
+        // const INDIGO = 0x6666ff;
+        // const VIOLET = 0x9966ff;
+        // const GREY = 0xffffff;
+
+        // this.tubeMaterial = new THREE.MeshPhongMaterial({
+        //     color: VIOLET,
+        //     envMap: envMap,
+        //     refractionRatio: 0.7,
+        //     specular: 0xffffff,
+        //     shininess: 1000
+        // });
+
+        // this.tubeMaterial.envMap.mapping = THREE.CubeRefractionMapping;
+
         // start and end points of curve
         // x0 y0 z0 x1 y1 z1
         this.corners = [];
-        this.bezier_curves = [];
         this.cubes = [];
-        this.curveGroup0 = new THREE.Group();
-        this.curveGroup1 = new THREE.Group();
+        this.curve_group_0 = [];
+        this.curve_group_1 = [];
+        this.spiral_group_0 = new THREE.Group();
+        this.spiral_group_1 = new THREE.Group();
         this.bubbleGroup = new THREE.Group();
         this.cm_curves = [];
         this.bubbles = [];
@@ -76,71 +89,94 @@ class Spiral extends Group {
         this.fibonacci = [];
         this.cumulative = [];
 
-        this.curveGroup0.position.set(x, 0, z);
-        this.curveGroup1.position.set(x, 0, z);
+
+
 
 
 
         parent.addToUpdateList(this);
+        this.init_params = this.init_params.bind(this);
         this.calculate = this.calculate.bind(this);
         this.create_cube = this.create_cube.bind(this);
-        this.rotate_bezier = this.rotate_bezier.bind(this);
         this.draw_bezier = this.draw_bezier.bind(this);
-        this.draw_catmull_rom = this.draw_catmull_rom.bind(this);
-        this.draw_line = this.draw_line.bind(this);
         this.draw_bubbles = this.draw_bubbles.bind(this);
         this.draw_cubes = this.draw_cubes.bind(this);
 
-        this.calculate(max_iter, direction);
-        this.draw_bezier();
-        // this.draw_cubes();
-        // this.draw_bubbles();
-        // this.draw_line();
+        this.init_params();
+        this.calculate(this.max_iter, direction);
+
+        for (let i = 0; i < this.num_spirals; i++) {
+            this.curve_group_0.push(new THREE.Group());
+            this.curve_group_1.push(new THREE.Group());
+            this.draw_bezier(i);
+
+        }
+        this.add(this.spiral_group_0);
+        this.add(this.spiral_group_1);
+
+        // const sound3 = new THREE.PositionalAudio(listener);
+        // const oscillator = listener.context.createOscillator();
+        // oscillator.type = 'sine';
+        // oscillator.frequency.setValueAtTime(144 * this.warp, sound3.context.currentTime);
+        // oscillator.start(0);
+        // sound3.setNodeSource(oscillator);
+        // sound3.setRefDistance(20);
+        // sound3.setVolume(0.5);
+        // this.spiral_group_0.add(sound3);
+
+        // const analyser3 = new THREE.AudioAnalyser(sound3, 32);
+        // this.warp = analyser3.getAverageFrequency() / 256;
+
+
     }
 
+    init_params() {
+        // Math.floor(Math.random() * (max - min) + min)
+
+        this.max_iter = Math.floor(Math.random() * (5) + 4);
+        // 160 8
+        this.x = Math.floor(Math.random() * (160) - 80);
+        this.z = Math.floor(Math.random() * (160) - 80);
+
+        // this.rotationSpeed = -0.01;
+        this.rotationSpeed = -Math.floor(Math.random() * (3) + 1) / 100; // 0.01 to 0.05
+        this.num_spirals = Math.floor(Math.random() * (28) + 8);
+        this.warp = Math.floor(Math.random() * (19) + 3) / 10; // 0.2 to 2.0
+        this.shrink_factor = Math.floor(Math.random() * (2) + 8) / 10; //0.5 to 1
+        this.y_squish *= Math.floor(Math.random() * (12) + 3) / 10; // 0.3 - 2
+
+        // this.max_iter = 7;
+        // this.x = 0;
+        // this.z = 0;
+        // this.rotationSpeed = 0;
+        // this.num_spirals = 16;
+        // this.warp = 0.4;
+        // this.shrink_factor = 0.5;
+        // this.y_squish = 0.3;
 
 
+        this.spiral_group_0.position.set(this.x, 0, this.z);
+        this.spiral_group_1.position.set(this.x, 0, this.z);
 
-    rotate_bezier(degrees) {
-        // interesting effect
-        // const myAxis = new THREE.Vector3(1, 0, 0);
-        // const myAxis = new THREE.Vector3(0, 1, 0);
-        const myAxis = new THREE.Vector3(10, 0, 0);
+        // const golden_ratio_conjugate = 0.618033988749895
+        // let h = Math.random();
+        // h += golden_ratio_conjugate;
+        // h %= 1
+        // hsv_to_rgb(h, 0.5, 0.95)
 
-        // this.curveGroup0.applyMatrix(new THREE.Matrix4().makeTranslation(this.x, 1, this.z));
-        // var q = new THREE.Quaternion();
-        // q.setFromAxisAngle(myAxis, THREE.MathUtils.degToRad(degrees));
-        // this.curveGroup0.applyQuaternion(q);
+        // this.tubeMaterial.color.setHex(Math.floor(Math.random() * 16777215).toString(16));
 
-        this.curveGroup0.rotateY(THREE.MathUtils.degToRad(degrees));
-        this.curveGroup1.rotateY(THREE.MathUtils.degToRad(degrees));
-        // this.curveGroup1.rotateOnWorldAxis(myAxis, THREE.MathUtils.degToRad(degrees));
-        // this.bubbleGroup.rotateOnWorldAxis(myAxis, THREE.MathUtils.degToRad(degrees));
+        // console.log(Math.floor(Math.random() * 16777215).toString(16));
 
-        // THREE.Object3D.prototype.rotateOnWorldAxis = function() {
-
-        //     // rotate object on axis in world space
-        //     // axis is assumed to be normalized
-        //     // assumes object does not have a rotated parent
-
-        //     var q = new THREE.Quaternion();
-
-        //     return function rotateOnWorldAxis( axis, angle ) {
-
-        //         q.setFromAxisAngle( axis, angle );
-
-        //         this.applyQuaternion( q );
-
-        //         return this;
-
-        //     }
-
-        // }();
     }
 
-    draw_bezier() {
+    draw_bezier(index) {
         let data;
         let radius;
+        const degrees = index * (360 / this.num_spirals)
+
+        // let spiral0 = new THREE.Group();
+        // let spiral1 = new THREE.Group();
         for (let i in this.corners) {
             // 7 5
             if (i == 0) {
@@ -155,41 +191,34 @@ class Spiral extends Group {
                 new THREE.Vector3(data[6], data[7] + this.y_offset, data[8]), // control
                 new THREE.Vector3(data[3], data[4] + this.y_offset, data[5]) // end
             );
-            // console.log(path);
-            // const points = path.getPoints(3);
-            // this.points.push(points[1]);
-            // this.points.push(points[2]);
-            // this.points.push(points[3]);
+
             // path, tubularSsegments, radius, radialsegments
             const curveGeometry = new THREE.TubeGeometry(path, 20, radius, 8, false);
-            // const curveGeometry = new THREE.TubeGeometry(path, 20, 1, 8, false);
-            // const curveObject = new THREE.Line(curveGeometry, material);
             const curveMesh = new THREE.Mesh(curveGeometry, this.tubeMaterial);
             this.add(curveMesh);
-            this.bezier_curves.push(curveMesh);
-            this.curveGroup0.add(curveMesh);
+            // spiral0.add(curveMesh);
+            this.curve_group_0[index].add(curveMesh);
 
             path = new THREE.QuadraticBezierCurve3(
                 new THREE.Vector3(-data[0], data[1] + this.y_offset, data[2]), // start
                 new THREE.Vector3(-data[6], data[7] + this.y_offset, data[8]), // control
                 new THREE.Vector3(-data[3], data[4] + this.y_offset, data[5]) // end
             );
-            // points = path.getPoints(3);
-            // this.points.push(points[1]);
-            // this.points.push(points[2]);
-            // this.points.push(points[3]);
-            // path, tubularSsegments, radius, radialsegments
+
             curveGeometry = new THREE.TubeGeometry(path, 20, radius, 8, false);
-            // const curveGeometry = new THREE.TubeGeometry(path, 20, 1, 8, false);
-            // const curveObject = new THREE.Line(curveGeometry, material);
             curveMesh = new THREE.Mesh(curveGeometry, this.tubeMaterial);
             this.add(curveMesh);
-            this.bezier_curves.push(curveMesh);
-            this.curveGroup1.add(curveMesh);
+            // spiral1.add(curveMesh);
+            this.curve_group_1[index].add(curveMesh);
 
+            this.curve_group_0[index].rotateY(THREE.MathUtils.degToRad(degrees));
+            this.curve_group_1[index].rotateY(THREE.MathUtils.degToRad(degrees));
         }
-        this.add(this.curveGroup0);
-        this.add(this.curveGroup1);
+        this.add(this.curve_group_0[index]);
+        this.add(this.curve_group_1[index]);
+        this.spiral_group_0.add(this.curve_group_0[index]);
+        this.spiral_group_1.add(this.curve_group_1[index]);
+
     }
 
     draw_bubbles(degrees) {
@@ -228,41 +257,6 @@ class Spiral extends Group {
         }
         this.add(this.bubbleGroup);
     }
-
-    draw_catmull_rom() {
-        // CATMULL ROM CURVE
-        let vectors = [];
-        let data;
-        for (let i in this.corners) {
-            data = this.corners[i];
-            vectors.push(new THREE.Vector3(data[0], data[1], data[2]));
-        }
-        data = this.corners[this.corners.length - 1]
-        vectors.push(new THREE.Vector3(data[3], data[4], data[5]));
-
-        const curve = new THREE.CatmullRomCurve3(vectors);
-        const points = curve.getPoints(100);
-        const curveGeometry = new THREE.BufferGeometry().setFromPoints(points);
-
-        const curveObject = new THREE.Line(curveGeometry, this.lineMaterial);
-        this.add(curveObject);
-    }
-
-    draw_line() {
-        for (let i in this.corners) {
-            const data = this.corners[i];
-
-            const points = [];
-            points.push(new THREE.Vector3(data[0], data[1], data[2]));
-            points.push(new THREE.Vector3(data[3], data[4], data[5]));
-
-            const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-
-            const line = new THREE.Line(lineGeometry, this.lineMaterial);
-            this.add(line);
-        }
-    }
-
 
     create_cube(num, sum, x, y, z) {
         num /= this.shrink_factor;
@@ -343,7 +337,6 @@ class Spiral extends Group {
                 if (dir == 2) {
                     // console.log("W");
                     x = f1x - (f1 / 2) - (num / 2);
-                    z = (f1z + f0z - (f0 / 2)) / 2;
                     z = (f1z + f0z) / 2 - (factor);
                 }
                 // S
@@ -465,12 +458,12 @@ class Spiral extends Group {
         }
 
         this.y_offset *= this.corners[this.corners.length - 1][4] + 0.3;
-
+        this.y_offset -= 50;
     }
 
     update(timeStamp) {
-        this.curveGroup0.rotateY(this.rotationSpeed);
-        this.curveGroup1.rotateY(-this.rotationSpeed);
+        this.spiral_group_0.rotateY(this.rotationSpeed);
+        this.spiral_group_1.rotateY(-this.rotationSpeed);
         // this.bubbleGroup.rotateY(this.rotationSpeed);
 
 

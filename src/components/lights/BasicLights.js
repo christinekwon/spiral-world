@@ -5,6 +5,14 @@ class BasicLights extends Group {
         // Invoke parent Group() constructor with our args
         super(...args);
 
+        // jelly
+        // const dir = new SpotLight(0xffffff, 3.6, 7, 0.8, 1, 1);
+        // const ambi = new AmbientLight(0x777777, 1.32);
+        // const hemi = new HemisphereLight(0xffc2c2, 0xbad2ff, 2.3);
+
+        // dir.position.set(0, 500, 0);
+        // dir.target.position.set(0, 300, 0);
+
         // gold
         const dir = new SpotLight(0xffffff, 1.6, 7, 0.8, 1, 1);
         const ambi = new AmbientLight(0x004d0d, 1.32);
