@@ -22,10 +22,7 @@ const renderer = new WebGLRenderer({ antialias: true });
 camera.add(listener);
 
 // Set up camera
-// camera.position.set(10, 50, -100);
 camera.position.set(0, 150, 300);
-// camera.position.set(0, 100, 0);
-// camera.position.set(0, 0, 300);
 camera.lookAt(new Vector3(0, 100, 0));
 
 // Set up renderer, canvas, and minor CSS adjustments

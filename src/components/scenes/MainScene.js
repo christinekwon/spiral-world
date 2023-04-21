@@ -1,6 +1,6 @@
 import * as Dat from 'dat.gui';
 import { Scene, Color } from 'three';
-import { Spiral, Flower, Land } from 'objects';
+import { Spiral } from 'objects';
 import { BasicLights } from 'lights';
 import * as THREE from "three";
 
@@ -19,17 +19,12 @@ class MainScene extends Scene {
 
         // Init state
         this.state = {
-            // gui: new Dat.GUI(), // Create GUI for scene
             rotationSpeed: 1,
             updateList: [],
         };
 
         // Set background to a nice color
         this.background = new Color(0x000000);
-
-        // this.background = new Color(0xffffff);
-
-
         // Add spirals to scene
 
         this.envMap = new THREE.CubeTextureLoader()
@@ -38,17 +33,9 @@ class MainScene extends Scene {
                 POSY, NEGY,
                 POSZ, NEGZ
             ]);
-        // var envMap = new THREE.CubeTextureLoader()
-        //     .load([
-        //         RAINBOW, RAINBOW,
-        //         RAINBOW, RAINBOW,
-        //         RAINBOW, RAINBOW
-        //     ]);
-
 
         // 16
 
-        // this.background = this.envMap;
 
         const lights = new BasicLights();
         this.add(lights);
@@ -58,9 +45,10 @@ class MainScene extends Scene {
         // set default low spiral count number that works on mobile
         let count = 4;
 
-        // if site is opened on computer with higher GPU, display more spirals
+        // if site is opened on computer with > GPU, display more spirals
         if (!isMobile) {
-            count = 30;
+            count = 20;
+            // count = 30;
         }
         for (let i = 0; i < count; i++) {
             this.create_new_spiral(listener);
@@ -80,7 +68,6 @@ class MainScene extends Scene {
 
     update(timeStamp) {
         const { rotationSpeed, updateList } = this.state;
-        // this.rotation.y = (rotationSpeed * timeStamp) / 10000;
 
         // Call update for each object in the updateList
         for (const obj of updateList) {

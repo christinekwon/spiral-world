@@ -9,10 +9,8 @@ class Spiral extends Group {
 
         // Init state
         this.state = {
-            // gui: parent.state.gui,
             bob: false,
             spin: this.spin.bind(this),
-            // twirl: 0,
 
         };
 
@@ -54,24 +52,6 @@ class Spiral extends Group {
             envMapIntensity: 1.6
         });
 
-        // const RED = 0xff8e88;
-        // const ORANGE = 0xfeba4f;
-        // const YELLOW = 0xffe983;
-        // const GREEN = 0x77dd77;
-        // const BLUE = 0x0da2ff;
-        // const INDIGO = 0x6666ff;
-        // const VIOLET = 0x9966ff;
-        // const GREY = 0xffffff;
-
-        // this.tubeMaterial = new THREE.MeshPhongMaterial({
-        //     color: VIOLET,
-        //     envMap: envMap,
-        //     refractionRatio: 0.7,
-        //     specular: 0xffffff,
-        //     shininess: 1000
-        // });
-
-        // this.tubeMaterial.envMap.mapping = THREE.CubeRefractionMapping;
 
         // start and end points of curve
         // x0 y0 z0 x1 y1 z1
@@ -88,10 +68,6 @@ class Spiral extends Group {
 
         this.fibonacci = [];
         this.cumulative = [];
-
-
-
-
 
 
         parent.addToUpdateList(this);
@@ -138,7 +114,6 @@ class Spiral extends Group {
         this.x = Math.floor(Math.random() * (160) - 80);
         this.z = Math.floor(Math.random() * (160) - 80);
 
-        // this.rotationSpeed = -0.01;
         this.rotationSpeed = -Math.floor(Math.random() * (3) + 1) / 100; // 0.01 to 0.05
         this.num_spirals = Math.floor(Math.random() * (28) + 8);
         this.warp = Math.floor(Math.random() * (19) + 3) / 10; // 0.2 to 2.0
@@ -157,16 +132,6 @@ class Spiral extends Group {
 
         this.spiral_group_0.position.set(this.x, 0, this.z);
         this.spiral_group_1.position.set(this.x, 0, this.z);
-
-        // const golden_ratio_conjugate = 0.618033988749895
-        // let h = Math.random();
-        // h += golden_ratio_conjugate;
-        // h %= 1
-        // hsv_to_rgb(h, 0.5, 0.95)
-
-        // this.tubeMaterial.color.setHex(Math.floor(Math.random() * 16777215).toString(16));
-
-        // console.log(Math.floor(Math.random() * 16777215).toString(16));
 
     }
 
@@ -192,11 +157,9 @@ class Spiral extends Group {
                 new THREE.Vector3(data[3], data[4] + this.y_offset, data[5]) // end
             );
 
-            // path, tubularSsegments, radius, radialsegments
             const curveGeometry = new THREE.TubeGeometry(path, 20, radius, 8, false);
             const curveMesh = new THREE.Mesh(curveGeometry, this.tubeMaterial);
             this.add(curveMesh);
-            // spiral0.add(curveMesh);
             this.curve_group_0[index].add(curveMesh);
 
             path = new THREE.QuadraticBezierCurve3(
@@ -208,7 +171,6 @@ class Spiral extends Group {
             curveGeometry = new THREE.TubeGeometry(path, 20, radius, 8, false);
             curveMesh = new THREE.Mesh(curveGeometry, this.tubeMaterial);
             this.add(curveMesh);
-            // spiral1.add(curveMesh);
             this.curve_group_1[index].add(curveMesh);
 
             this.curve_group_0[index].rotateY(THREE.MathUtils.degToRad(degrees));
@@ -222,29 +184,11 @@ class Spiral extends Group {
     }
 
     draw_bubbles(degrees) {
-        // let data;
-        // const myAxis = new THREE.Vector3(0, 1, 0);
-        // for (let i in this.points) {
-        //     // if (i >140) {
-        //     data = this.points[i];
-        //     const geometry = new THREE.SphereGeometry(5, 32, 16);
-        //     const sphere = new THREE.Mesh(geometry, this.tubeMaterial);
-        //     sphere.position.set(data.x, data.y, data.z);
-        //     sphere.rotateOnWorldAxis(myAxis, THREE.MathUtils.degToRad(degrees));
-        //     sphere.matrixAutoUpdate = false;
-        //     sphere.updateMatrix();
-        //     this.bubbles.push(sphere);
-        //     this.bubbleGroup.add(sphere);
-        //     // }
 
-        // }
-        // this.add(this.bubbleGroup);
         let data;
         const myAxis = new THREE.Vector3(0, 1, 0);
         for (let i in this.corners) {
             data = this.corners[i];
-            // const geometry = new THREE.SphereGeometry(i * i * i * i / (this.shrink_factor * 70), 32, 16);
-
             const geometry = new THREE.SphereGeometry(2, 32, 16);
             const sphere = new THREE.Mesh(geometry, this.tubeMaterial);
             sphere.position.set(data[3], this.y_offset + data[4], data[5]);
